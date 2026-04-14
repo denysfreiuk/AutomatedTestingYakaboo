@@ -2,6 +2,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import re
 from pages.base_page import BasePage
 
 
@@ -14,6 +15,7 @@ class CatalogPage(BasePage):
     SORT_BUTTON = (By.CSS_SELECTOR, "button.sorting__btn")
     SORT_OPTION_CHEAPEST = (By.XPATH, "//button[contains(@class, 'sort-item') and contains(text(), 'Від найдешевших')]")
     CURRENT_SORT_TEXT = (By.CSS_SELECTOR, "button.sorting__btn span")
+    PRODUCT_COUNT = (By.CSS_SELECTOR, "span.category__amount")
 
     def get_title_text(self):
         try:
@@ -58,3 +60,21 @@ class CatalogPage(BasePage):
 
     def get_active_sorting_name(self):
         return self.wait_for_element(self.CURRENT_SORT_TEXT).text.strip()
+
+    def get_total_products_count(self):
+        try:
+            WebDriverWait(self.driver, 10).until(
+                lambda d: re.search(r'\d', d.find_element(*self.PRODUCT_COUNT).get_attribute("textContent"))
+            )
+
+            element = self.driver.find_element(*self.PRODUCT_COUNT)
+            text = element.get_attribute("textContent").strip()
+
+            count = re.sub(r'\D', '', text)
+            print(f"[Debug] Отримано текст лічильника: '{text}', цифр знайдено: '{count}'")
+
+            return int(count) if count else 0
+        except Exception as e:
+            print(f"[Error] Не вдалося зчитати кількість товарів: {e}")
+            return 0
+

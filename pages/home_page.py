@@ -134,3 +134,4 @@ class HomePage(BasePage):
         self.driver.execute_script("arguments[0].click();", target_element)
 
         time.sleep(4)
+

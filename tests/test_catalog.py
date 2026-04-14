@@ -49,3 +49,26 @@ class TestCatalog:
 
         active_sort = catalog_page.get_active_sorting_name()
         assert "найдешевших" in active_sort.lower()
+
+    def test_product_count_changes_after_filters_tc032(self):
+        catalog_page = CatalogPage(self.driver)
+        home_page = HomePage(self.driver)
+
+        self.driver.get("https://www.yakaboo.ua/ua/knigi/vlasnij-import.html")
+        home_page.close_ad_if_present()
+
+        time.sleep(2)
+
+        initial_count = catalog_page.get_total_products_count()
+        print(f"\nПочаткова кількість товарів: {initial_count}")
+        assert initial_count > 0, f"БАГ! Лічильник показує 0 товарів на основній сторінці каталогу."
+
+        catalog_page.open_filters_menu()
+        catalog_page.select_filter_by_text("Паперова")
+        catalog_page.select_filter_by_text("Англійська")
+
+        time.sleep(3)
+        filtered_count = catalog_page.get_total_products_count()
+        print(f"Кількість після фільтрації: {filtered_count}")
+
+        assert filtered_count < initial_count, "Число товарів не зменшилось після застосування фільтрів!"
