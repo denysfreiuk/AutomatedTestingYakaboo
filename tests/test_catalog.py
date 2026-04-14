@@ -19,34 +19,33 @@ class TestCatalog:
     def test_catalog_navigation_tc004(self):
         catalog_page = CatalogPage(self.driver)
         home_page = HomePage(self.driver)
-
         self.driver.get("https://www.yakaboo.ua/ua/knigi/vlasnij-import.html")
-
         home_page.close_ad_if_present()
-        time.sleep(2)
 
         actual_title = catalog_page.get_title_text()
-        print(f"Результат: '{actual_title}'")
-
-        expected_phrase = "іноземними мовами"
-        assert expected_phrase.lower() in actual_title.lower(), \
-            f"БАГ! Очікували заголовок з '{expected_phrase}', але отримали порожнечу або інший текст: '{actual_title}'"
+        assert "іноземними мовами" in actual_title.lower()
 
     def test_multiple_filters_count_tc024(self):
         catalog_page = CatalogPage(self.driver)
         home_page = HomePage(self.driver)
-
         self.driver.get("https://www.yakaboo.ua/ua/knigi/vlasnij-import.html")
         home_page.close_ad_if_present()
 
         catalog_page.open_filters_menu()
-
         catalog_page.select_filter_by_text("Паперова")
-
         catalog_page.select_filter_by_text("Англійська")
-
         catalog_page.close_filters_menu()
 
-        final_count = catalog_page.get_applied_filters_count()
+        assert catalog_page.get_applied_filters_count() == 2
 
-        assert final_count == 2, f"БАГ! Очікували 2 обраних фільтри на кнопці, але бачимо: {final_count}"
+    def test_sort_by_price_cheapest_tc025(self):
+        catalog_page = CatalogPage(self.driver)
+        home_page = HomePage(self.driver)
+        self.driver.get("https://www.yakaboo.ua/ua/knigi/dobirki-yakaboo.html")
+        home_page.close_ad_if_present()
+
+        catalog_page.open_sorting_menu()
+        catalog_page.select_sorting_cheapest()
+
+        active_sort = catalog_page.get_active_sorting_name()
+        assert "найдешевших" in active_sort.lower()

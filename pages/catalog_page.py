@@ -1,15 +1,19 @@
+import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
-import time
 
 
 class CatalogPage(BasePage):
+    TITLE_H1 = (By.CSS_SELECTOR, "div.category__name h1")
     FILTERS_BUTTON = (By.CSS_SELECTOR, "button.ui-btn-category.dark")
     CLOSE_FILTERS_BTN = (By.CSS_SELECTOR, "button.ui-btn-close")
     FILTER_COUNT_BADGE = (By.CSS_SELECTOR, "span.filter-length")
-    TITLE_H1 = (By.CSS_SELECTOR, "div.category__name h1")
+
+    SORT_BUTTON = (By.CSS_SELECTOR, "button.sorting__btn")
+    SORT_OPTION_CHEAPEST = (By.XPATH, "//button[contains(@class, 'sort-item') and contains(text(), 'Від найдешевших')]")
+    CURRENT_SORT_TEXT = (By.CSS_SELECTOR, "button.sorting__btn span")
 
     def get_title_text(self):
         try:
@@ -17,7 +21,7 @@ class CatalogPage(BasePage):
             return self.driver.find_element(*self.TITLE_H1).text.strip()
         except:
             return self.driver.execute_script(
-                "return document.querySelector('div.category__name h1').textContent;").strip()
+                "return document.querySelector('div.category__name h1') ? document.querySelector('div.category__name h1').textContent : '';").strip()
 
     def open_filters_menu(self):
         self.click_element(self.FILTERS_BUTTON)
@@ -27,22 +31,13 @@ class CatalogPage(BasePage):
         old_url = self.driver.current_url
         xpath = f"//span[contains(@class, 'ui-filter-checkbox__text') and text()='{filter_name}']"
         element = self.wait_for_element((By.XPATH, xpath))
-
         self.driver.execute_script("arguments[0].click();", element)
-
-        try:
-            WebDriverWait(self.driver, 10).until(lambda d: d.current_url != old_url)
-        except:
-            print(f"Попередження: URL не змінився після вибору '{filter_name}'")
-
+        WebDriverWait(self.driver, 10).until(lambda d: d.current_url != old_url)
         time.sleep(1)
 
     def close_filters_menu(self):
-        self.driver.execute_script(
-            "document.querySelector('.sidebar-filters__content') ? document.querySelector('.sidebar-filters__content').scrollTop = 0 : window.scrollTo(0,0);")
-        time.sleep(1)
         self.click_element(self.CLOSE_FILTERS_BTN)
-        time.sleep(2)
+        time.sleep(1.5)
 
     def get_applied_filters_count(self):
         try:
@@ -50,3 +45,16 @@ class CatalogPage(BasePage):
             return int(badge.text.strip())
         except:
             return 0
+
+    def open_sorting_menu(self):
+        self.click_element(self.SORT_BUTTON)
+        time.sleep(1)
+
+    def select_sorting_cheapest(self):
+        old_url = self.driver.current_url
+        self.click_element(self.SORT_OPTION_CHEAPEST)
+        WebDriverWait(self.driver, 10).until(lambda d: d.current_url != old_url)
+        time.sleep(2)
+
+    def get_active_sorting_name(self):
+        return self.wait_for_element(self.CURRENT_SORT_TEXT).text.strip()
