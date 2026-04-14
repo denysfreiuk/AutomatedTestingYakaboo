@@ -19,11 +19,9 @@ class HomePage(BasePage):
 
     @property
     def first_book_title(self):
-        # Локатор першої книги з результатів пошуку
         return self.wait_for_element((By.CSS_SELECTOR, "a.ui-card-title.category-card__name"))
 
     def close_ad_if_present(self):
-        """Пробує закрити рекламний банер натисканням клавіші ESCAPE"""
         try:
             time.sleep(2)
             ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
@@ -33,23 +31,19 @@ class HomePage(BasePage):
 
     def search_for_book(self, keyword):
         input_field = self.search_input
-        # Клікаємо в поле і чекаємо секунду, щоб воно розгорнулось (якщо це анімація)
         self.driver.execute_script("arguments[0].click();", input_field)
         time.sleep(1)
 
         input_field.clear()
         input_field.send_keys(keyword)
-        time.sleep(1)  # Даємо сайту час показати підказки
+        time.sleep(1)
 
-        # Пріоритетно пробуємо клікнути на кнопку пошуку
         try:
             self.click_element((By.CSS_SELECTOR, "button.ui-btn-primary"))
         except:
-            # Якщо кнопка з якихось причин недоступна, тиснемо Enter
             input_field.send_keys(Keys.ENTER)
 
     def get_first_book_title_text(self):
-        """Повертає текст першої знайденої книги"""
         return self.first_book_title.text.strip()
 
     @property
@@ -59,7 +53,6 @@ class HomePage(BasePage):
 
     @property
     def cart_counter(self):
-        # Локатор червоного лічильника над кошиком
         return self.wait_for_element((By.CSS_SELECTOR, "span.ui-btn-shopping-cart__counter"))
 
     def add_first_book_to_cart(self):
@@ -67,12 +60,11 @@ class HomePage(BasePage):
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
         time.sleep(1)
         self.click_element((By.CSS_SELECTOR, "button[data-testid='addToCart']"))
-        # Чекаємо 2 секунди, щоб пройшла анімація додавання і оновився лічильник
         time.sleep(2)
 
     def get_cart_item_count(self):
         try:
             return int(self.cart_counter.text)
         except:
-            # Якщо елемента немає на сторінці (кошик порожній), повертаємо 0
+
             return 0

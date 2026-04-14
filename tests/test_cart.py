@@ -37,21 +37,37 @@ class TestCart:
         home_page = HomePage(self.driver)
         cart_page = CartPage(self.driver)
 
-        # 1. Відкриваємо сайт і шукаємо товар
         home_page.open()
         home_page.close_ad_if_present()
         home_page.search_for_book("Кобзар")
         time.sleep(3)
 
-        # 2. Додаємо товар до кошика
         home_page.add_first_book_to_cart()
         assert home_page.get_cart_item_count() == 1, "Не вдалося додати товар перед видаленням"
 
-        # 3. Відкриваємо кошик
         cart_page.open_cart()
 
-        # 4. Видаляємо товар
         cart_page.remove_first_item()
 
-        # 5. Перевіряємо, що кошик порожній
         assert cart_page.is_cart_empty(), "Повідомлення про порожній кошик не знайдено! Товар міг не видалитися."
+
+    def test_max_quantity_tc008(self):
+        home_page = HomePage(self.driver)
+        cart_page = CartPage(self.driver)
+
+        home_page.open()
+        home_page.close_ad_if_present()
+        home_page.search_for_book("Кобзар")
+        time.sleep(3)
+
+        home_page.add_first_book_to_cart()
+
+        cart_page.open_cart()
+
+        attempted_amount = "999"
+        actual_amount = cart_page.set_huge_quantity_and_get_actual(attempted_amount)
+
+        print(f"\nСпробували додати {attempted_amount} шт. Сайт автоматично скинув до: {actual_amount} шт.")
+
+        assert actual_amount != attempted_amount, f"БАГ! Система дозволила додати {attempted_amount} товарів!"
+        assert int(actual_amount) > 0, "Після введення великого числа, кількість стала нульовою або мінусовою!"
