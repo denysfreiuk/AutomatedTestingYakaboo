@@ -32,3 +32,23 @@ class TestSearch:
 
         actual_title = home_page.get_first_book_title_text()
         assert book_title.lower() in actual_title.lower(), f"Очікували '{book_title}' у назві, але отримали '{actual_title}'"
+
+    def test_search_partial_author_tc005(self):
+        home_page = HomePage(self.driver)
+
+        home_page.open()
+        home_page.close_ad_if_present()
+
+        partial_author = "Тарас Шевч"
+        print(f"\nШукаємо за запитом: '{partial_author}'...")
+        home_page.search_for_book(partial_author)
+
+        time.sleep(4)
+
+        actual_authors = home_page.get_all_book_authors_texts()
+        print(f"Знайдені автори: {actual_authors}")
+
+        match_found = any(partial_author.lower() in author.lower() for author in actual_authors)
+
+        assert match_found, \
+            f"БАГ! Очікували знайти '{partial_author}' серед авторів, але отримали такий список: {actual_authors}"
