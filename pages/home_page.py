@@ -4,6 +4,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from pages.base_page import BasePage
 from selenium.common.exceptions import StaleElementReferenceException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class HomePage(BasePage):
     def open(self):
@@ -155,3 +157,20 @@ class HomePage(BasePage):
         except:
             return 0
 
+    def click_clear_cart(self):
+        clear_btn = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "span.header-clear-cart"))
+        )
+        self.driver.execute_script("arguments[0].click();", clear_btn)
+
+    def confirm_cart_clearance(self):
+        ok_btn = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'btn--info') and contains(text(), 'OK')]"))
+        )
+        self.driver.execute_script("arguments[0].click();", ok_btn)
+
+    def get_empty_cart_text(self):
+        empty_msg = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Ваш кошик порожній')]"))
+        )
+        return empty_msg.text.strip()

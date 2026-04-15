@@ -4,7 +4,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from pages.home_page import HomePage
-from pages.cart_page import CartPage  # Додали імпорт!
+from pages.cart_page import CartPage
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class TestCart:
@@ -71,3 +73,26 @@ class TestCart:
 
         assert actual_amount != attempted_amount, f"БАГ! Система дозволила додати {attempted_amount} товарів!"
         assert int(actual_amount) > 0, "Після введення великого числа, кількість стала нульовою або мінусовою!"
+
+    def test_full_cart_clearance_tc013(self):
+        home_page = HomePage(self.driver)
+
+        home_page.open()
+        home_page.close_ad_if_present()
+
+        home_page.add_first_book_to_cart()
+
+        WebDriverWait(self.driver, 10).until(lambda d: home_page.get_header_cart_count() > 0)
+
+        cart_icon = self.driver.find_element(By.CSS_SELECTOR, "button.ui-btn-shopping-cart")
+        self.driver.execute_script("arguments[0].click();", cart_icon)
+        time.sleep(1)
+
+        home_page.click_clear_cart()
+        home_page.confirm_cart_clearance()
+
+        empty_text = home_page.get_empty_cart_text()
+
+        assert "порожній" in empty_text.lower(), f"БАГ! Кошик не порожній. Текст: {empty_text}"
+        assert home_page.get_header_cart_count() == 0, "БАГ! Лічильник на іконці кошика не обнулився!"
+
