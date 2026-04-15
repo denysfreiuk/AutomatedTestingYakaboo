@@ -135,3 +135,23 @@ class HomePage(BasePage):
 
         time.sleep(4)
 
+    def click_go_to_checkout(self):
+        locator = (By.XPATH, "//button[contains(@class, 'ui-btn-accent') and contains(text(), 'Оформити замовлення')]")
+
+        element = self.wait_for_element(locator)
+        self.driver.execute_script("arguments[0].click();", element)
+
+    def get_header_cart_count(self):
+        try:
+            from selenium.webdriver.support.ui import WebDriverWait
+            from selenium.webdriver.support import expected_conditions as EC
+            from selenium.webdriver.common.by import By
+
+            element = WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "span.ui-btn-shopping-cart__counter"))
+            )
+            count_text = self.driver.execute_script("return arguments[0].textContent;", element).strip()
+            return int(count_text) if count_text else 0
+        except:
+            return 0
+
