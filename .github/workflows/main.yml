@@ -1,4 +1,3 @@
-yaml
 name: UI Tests CI/CD
 
 on:
