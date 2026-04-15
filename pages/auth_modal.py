@@ -3,6 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from pages.base_page import BasePage
+import time
 
 
 class AuthModal(BasePage):
@@ -12,6 +13,11 @@ class AuthModal(BasePage):
     ERROR_MSG = (By.CSS_SELECTOR, "p.validation-error")
 
     REGISTER_LINK = (By.XPATH, "//button[contains(@class, 'ui-btn-link') and contains(text(), 'Зареєструватися')]")
+    REG_FIRSTNAME = (By.ID, "reg-firstname")
+    REG_LASTNAME = (By.ID, "reg-lastname")
+    REG_PHONE = (By.CSS_SELECTOR, "input[type='tel']")
+    REG_EMAIL = (By.ID, "reg-email")
+    REG_PASSWORD = (By.NAME, "reg_password")
     REGISTER_SUBMIT_BTN = (By.ID, "reg-submit")
 
     def open_login_modal(self):
@@ -42,12 +48,35 @@ class AuthModal(BasePage):
             EC.element_to_be_clickable(self.REGISTER_LINK)
         )
         self.driver.execute_script("arguments[0].click();", link)
+        time.sleep(2)
 
     def click_register_submit(self):
         btn = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(self.REGISTER_SUBMIT_BTN)
+            EC.element_to_be_clickable(self.REGISTER_SUBMIT_BTN)
         )
         self.driver.execute_script("arguments[0].click();", btn)
+
+    def fill_registration_data(self, fname, lname, phone, email, password):
+        data = [
+            (self.REG_FIRSTNAME, fname),
+            (self.REG_LASTNAME, lname),
+            (self.REG_PHONE, phone),
+            (self.REG_EMAIL, email),
+            (self.REG_PASSWORD, password)
+        ]
+
+        for locator, value in data:
+            element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(locator))
+            self.driver.execute_script(
+                "arguments[0].value = arguments[1];"
+                "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));"
+                "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+                element, value
+            )
+
+        pass_el = self.driver.find_element(*self.REG_PASSWORD)
+        pass_el.send_keys(Keys.TAB)
+        time.sleep(1)
 
     def get_all_error_messages(self):
         try:
