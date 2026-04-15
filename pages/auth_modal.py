@@ -1,14 +1,18 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys # Додали імпорт клавіш
+from selenium.webdriver.common.keys import Keys
 from pages.base_page import BasePage
+
 
 class AuthModal(BasePage):
     ACCOUNT_BTN = (By.CSS_SELECTOR, "button.ui-btn-account")
     LOGIN_INPUT = (By.CSS_SELECTOR, "input#auth-login")
     PASSWORD_INPUT = (By.NAME, "auth_password")
     ERROR_MSG = (By.CSS_SELECTOR, "p.validation-error")
+
+    REGISTER_LINK = (By.XPATH, "//button[contains(@class, 'ui-btn-link') and contains(text(), 'Зареєструватися')]")
+    REGISTER_SUBMIT_BTN = (By.ID, "reg-submit")
 
     def open_login_modal(self):
         btn = WebDriverWait(self.driver, 10).until(
@@ -32,3 +36,25 @@ class AuthModal(BasePage):
             EC.visibility_of_element_located(self.ERROR_MSG)
         )
         return error_element.text.strip()
+
+    def click_register_link(self):
+        link = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(self.REGISTER_LINK)
+        )
+        self.driver.execute_script("arguments[0].click();", link)
+
+    def click_register_submit(self):
+        btn = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located(self.REGISTER_SUBMIT_BTN)
+        )
+        self.driver.execute_script("arguments[0].click();", btn)
+
+    def get_all_error_messages(self):
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located(self.ERROR_MSG)
+            )
+        except:
+            pass
+        elements = self.driver.find_elements(*self.ERROR_MSG)
+        return [el.text.strip() for el in elements if el.text.strip() != ""]

@@ -62,3 +62,26 @@ class TestAuth:
 
         assert expected_error in actual_error, \
             f"БАГ! Очікували текст '{expected_error}', але отримали '{actual_error}'"
+
+    def test_empty_registration_fields_tc011(self):
+        home_page = HomePage(self.driver)
+        auth_modal = AuthModal(self.driver)
+
+        home_page.open()
+        home_page.close_ad_if_present()
+
+        time.sleep(1)
+
+        auth_modal.click_register_link()
+        time.sleep(1)
+
+        auth_modal.click_register_submit()
+        time.sleep(1)
+
+        errors = auth_modal.get_all_error_messages()
+
+        expected_text = "обов'язковим"
+
+        assert len(errors) > 0, "БАГ! Форма реєстрації пропустила порожні поля!"
+        assert any(expected_text.lower() in err.lower() for err in errors), \
+            f"БАГ! Очікували текст '{expected_text}', але маємо: {errors}"
